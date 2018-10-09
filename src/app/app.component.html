@@ -1,20 +1,61 @@
-<!--The content below is only a placeholder and can be replaced.-->
-<div style="text-align:center">
-  <h1>
-    Welcome to {{ title }}!
-  </h1>
-  <img width="300" alt="Angular Logo" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTAgMjUwIj4KICAgIDxwYXRoIGZpbGw9IiNERDAwMzEiIGQ9Ik0xMjUgMzBMMzEuOSA2My4ybDE0LjIgMTIzLjFMMTI1IDIzMGw3OC45LTQzLjcgMTQuMi0xMjMuMXoiIC8+CiAgICA8cGF0aCBmaWxsPSIjQzMwMDJGIiBkPSJNMTI1IDMwdjIyLjItLjFWMjMwbDc4LjktNDMuNyAxNC4yLTEyMy4xTDEyNSAzMHoiIC8+CiAgICA8cGF0aCAgZmlsbD0iI0ZGRkZGRiIgZD0iTTEyNSA1Mi4xTDY2LjggMTgyLjZoMjEuN2wxMS43LTI5LjJoNDkuNGwxMS43IDI5LjJIMTgzTDEyNSA1Mi4xem0xNyA4My4zaC0zNGwxNy00MC45IDE3IDQwLjl6IiAvPgogIDwvc3ZnPg==">
-</div>
-<h2>Here are some links to help you start: </h2>
-<ul>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://angular.io/tutorial">Tour of Heroes</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://github.com/angular/angular-cli/wiki">CLI Documentation</a></h2>
-  </li>
-  <li>
-    <h2><a target="_blank" rel="noopener" href="https://blog.angular.io/">Angular blog</a></h2>
-  </li>
-</ul>
+<!-- 
+<div (textSelect)="renderRectangles( $event )" class="container">
+  <div class="container-text-area" [ngClass]="{
+    'perspective': prespctive
+  }">
+    <div class="backdrop">
+      <div class="highlights" [innerHTML]="text"></div>
+    </div>
+    <textarea (input)="changeInput($event)">
+    Do I still Love you? Absolutely. There is not a doubt in my mind. Through
+    all my mind, my ego&hellip; I was always faithful in my Love for you.
+    That I made you doubt it, that is the great mistake of a Life full of
+    mistakes. The truth doesn't set us free, Robin. I can tell you I Love you
+    as many times as you can stand to hear it and all that does, the only
+    thing, is remind us&hellip; that Love is not enough. Not even close.
+  </textarea>
+    <br>
+  </div>
+  <button (click)="prespctive = !prespctive">Toggle</button>
+  <p *ngFor="let i of [ 1, 2, 3, 4, 5, 6 ]">
+    Do I still Love you? Absolutely. There is not a doubt in my mind. Through
+    all my mind, my ego&hellip; I was always faithful in my Love for you.
+    That I made you doubt it, that is the great mistake of a Life full of
+    mistakes. The truth doesn't set us free, Robin. I can tell you I Love you
+    as many times as you can stand to hear it and all that does, the only
+    thing, is remind us&hellip; that Love is not enough. Not even close.
+  </p>
 
+  <div *ngIf="hostRectangle" class="indicator" [style.left.px]="hostRectangle.left" [style.top.px]="hostRectangle.top"
+    [style.width.px]="hostRectangle.width" [style.height.px]="0">
+
+    <div class="indicator__cta">
+      <div (mousedown)="$event.preventDefault()" (mouseup)="$event.stopPropagation();" class="indicator__cta-link">
+        <input type="text" class="form-control" />
+      </div>
+    </div>
+
+  </div>
+
+  <p contenteditable>My Data</p>
+</div> -->
+
+<div class="container" (textSelect)="renderRectangles( $event, i )" *ngFor="let line of lines; let i = index">
+  <form class="form-group" #f="ngForm" (ngSubmit)="submit()">
+    <div type="text" class="form-control" contenteditable="true" required [(ngModel)]="line.text" name="myName" (input)="applyHighlightsToField(this.selectedText, usertext)"></div>
+  </form>
+
+  <div *ngIf="line?.hostRectangle" class="indicator" [style.left.px]="line.hostRectangle?.left" [style.top.px]="line.hostRectangle?.top"
+    [style.width.px]="line?.hostRectangle?.width" [style.bottom.px]="line?.hostRectangle?.height">
+
+    <div class="indicator__cta" [styleGetter]="line?.hostRectangle?.top">
+      <div class="indicator__cta-link">
+        <input type="text" class="form-control" [(ngModel)]="selectedTextTemp" />
+        <ul *ngIf="line.items" class="list-group">
+          <li class="list-group-items" *ngFor="let item of line.items">{{ item?.selection }}</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>

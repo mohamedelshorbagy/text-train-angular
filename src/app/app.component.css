@@ -1,0 +1,57 @@
+:host {
+    display: block;
+    font-size: 18px;
+}
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+.container {
+    position: relative;
+}
+
+.indicator {
+    position: absolute;
+    z-index: 2;
+}
+
+.indicator__cta {
+    top: 9rem;
+    left: 50%;
+    position: absolute;
+}
+
+.indicator__cta-link {
+    background-color: #dddddd;
+    border-radius: 5px 5px 5px 5px;
+    bottom: 0px;
+    box-shadow: 2px 2px 5px #dddddd;
+    color: #333333;
+    cursor: pointer;
+    left: 0px;
+    padding: 11px 22px 10px 22px;
+    position: absolute;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    z-index: 99999;
+    width: 13rem;
+}
+
+.indicator__cta-link::after {
+    top: -5px;
+    font-size: 15px;
+    left: 50%;
+    line-height: 15px;
+    content: "";
+    color: #dddddd;
+    position: absolute;
+    transform: translateX(-50%);
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 7px solid #dddddd;
+}
+
+.form-group {
+    margin-top: 4rem;
+}
