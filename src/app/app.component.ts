@@ -1,19 +1,11 @@
 
 // Import the core angular services.
 import { Component } from "@angular/core";
+import { DomSanitizer } from "@angular/platform-browser";
 
 // Import the application components and services.
 import { TextSelectEvent } from "./directives/text-selection.directive";
-
-// ----------------------------------------------------------------------------------- //
-// ----------------------------------------------------------------------------------- //
-
-interface SelectionRectangle {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
+import { StoreService } from "./services/store.service";
 
 @Component({
   selector: "app-root",
@@ -22,55 +14,28 @@ interface SelectionRectangle {
 })
 export class AppComponent {
 
+  toggleInputs: boolean = false;
+  tuplesPhrases: any;
+  lines: any;
+  entities: any;
 
-  height: number;
-  lines = [{
-    text: 'Big mac from mac',
-    items: [
-      {
-        selection: 'Food',
-        text: 'Big mac'
-      }
-    ]
-  }, {
-    text: 'Chicken Macdo'
-  }]
-
-  public hostRectangle: SelectionRectangle | null;
-  public selectedText: string;
-
-
-  public hostRectangleTemp: SelectionRectangle | null;
-  public selectedTextTemp: string;
-
-
-
-  text: any = `Do I still Love you? Absolutely. There is not a doubt in my mind. Through
-  all my mind, my ego I was always faithful in my Love for you.
-  That I made you doubt it, that is the great mistake of a Life full of
-  mistakes. The truth doesn't set us free, Robin. I can tell you I Love you
-  as many times as you can stand to hear it and all that does, the only
-  thing, is remind us&hellip; that Love is not enough. Not even close.`;
-  public prespctive = false;
-
-  // I initialize the app-component.
-  constructor() {
-
-    this.hostRectangle = null;
-    this.selectedText = "";
+  constructor(
+    private store: StoreService,
+    public _sanitizer: DomSanitizer) {
 
   }
 
-  applyHighlightsToField(selected, text) {
-    if (selected !== '') {
-      console.group('');
-      console.log('selected', selected);
-      console.log('text', text);
-      console.groupEnd();
-      let newRegex = new RegExp(`\\b${selected}\\b`, 'g');
-      text = text.replace(newRegex, `<mark>$&</mark>`);
-    }
+  ngOnInit() {
+    this.entities = this.store.getEntities();
+
+
+
+
+
+
   }
+
+
   // ---
   // PUBLIC METHODS.
   // ---
@@ -81,7 +46,6 @@ export class AppComponent {
     console.group("Text Select Event");
     console.log('index', index);
     console.log("Text:", event.text);
-    console.log("Viewport Rectangle:", event.viewportRectangle);
     console.log("Host Rectangle:", event.hostRectangle);
     console.groupEnd();
     console.table(this.lines);
@@ -91,38 +55,28 @@ export class AppComponent {
       }
     }
     if (event.text) {
-      this.lines[index]['selectedTemp'] = event.text;
+      this.lines[index]['selectedText'] = event.text;
     }
+
+
     // If a new selection has been created, the viewport and host rectangles will
     // exist. Or, if a selection is being removed, the rectangles will be null.
     if (event.hostRectangle) {
       this.lines[index]['hostRectangle'] = event.hostRectangle;
-      this.hostRectangle = event.hostRectangle;
-      this.selectedText = event.text;
     } else {
       for (let i = 0; i < this.lines.length; i++) {
         if (i !== index) {
           this.lines[i]['hostRectangle'] = null;
         }
       }
-      this.hostRectangle = null;
-      this.selectedText = "";
 
     }
 
   }
-
-
-  getTop(height, top?: string) {
-    this.height = parseFloat(height);
-    console.log(height, top);
-  }
-
   // I share the selected text with friends :)
   public shareSelection(): void {
 
     console.group("Shared Text");
-    console.log(this.selectedText);
     console.groupEnd();
 
     // Now that we've shared the text, let's clear the current selection.
@@ -131,9 +85,51 @@ export class AppComponent {
     // event, which implicitly calls our renderRectangles() callback. However,
     // in IE, the above call doesn't appear to trigger the "selectionchange"
     // event. As such, we need to remove the host rectangle explicitly.
-    this.hostRectangle = null;
-    this.selectedText = "";
+  }
 
+  public submitPhrases() {
+    this.toggleInputs = true;
+    this.lines = this.store.tuple2Arrays(this.tuplesPhrases);
+    this.getEntitesFromPhrase();
+
+  }
+
+
+  getEntitesFromPhrase() {
+    for (let i = 0; i < this.lines.length; i++) {
+      let phrase = this.lines[i][0];
+      let entites = this.lines[i][1]['entities']; // Array
+      this.lines[i][2] = phrase;
+      if (entites && entites.length) { // Exist
+        for (let j = 0; j < entites.length; j++) {
+          let entity = entites[j];
+          /**
+           * 0 => Start
+           * 1 => End
+           * 3 => Entity Name
+           */
+          let start = entity[0];
+          let end = entity[1];
+          let entityName = entity[2];
+          let token = phrase.substring(start, end);
+          let tokenWithEntity = `<span entity="${entityName}" style="background-color: ${this.entities[entityName]}">${token}</span>`;
+          this.lines[i][0] = this.lines[i][0].replace(token, tokenWithEntity);
+        }
+        this.lines[i][3] = this._sanitizer.bypassSecurityTrustHtml(this.lines[i][0]);
+      }
+    }
+
+  }
+
+
+  public changeEntity(index: number) {
+    console.log(index);
+
+  }
+
+
+  public change(event) {
+    console.log(event);
   }
 
 }

@@ -1,61 +1,26 @@
-<!-- 
-<div (textSelect)="renderRectangles( $event )" class="container">
-  <div class="container-text-area" [ngClass]="{
-    'perspective': prespctive
-  }">
-    <div class="backdrop">
-      <div class="highlights" [innerHTML]="text"></div>
-    </div>
-    <textarea (input)="changeInput($event)">
-    Do I still Love you? Absolutely. There is not a doubt in my mind. Through
-    all my mind, my ego&hellip; I was always faithful in my Love for you.
-    That I made you doubt it, that is the great mistake of a Life full of
-    mistakes. The truth doesn't set us free, Robin. I can tell you I Love you
-    as many times as you can stand to hear it and all that does, the only
-    thing, is remind us&hellip; that Love is not enough. Not even close.
-  </textarea>
-    <br>
-  </div>
-  <button (click)="prespctive = !prespctive">Toggle</button>
-  <p *ngFor="let i of [ 1, 2, 3, 4, 5, 6 ]">
-    Do I still Love you? Absolutely. There is not a doubt in my mind. Through
-    all my mind, my ego&hellip; I was always faithful in my Love for you.
-    That I made you doubt it, that is the great mistake of a Life full of
-    mistakes. The truth doesn't set us free, Robin. I can tell you I Love you
-    as many times as you can stand to hear it and all that does, the only
-    thing, is remind us&hellip; that Love is not enough. Not even close.
-  </p>
-
-  <div *ngIf="hostRectangle" class="indicator" [style.left.px]="hostRectangle.left" [style.top.px]="hostRectangle.top"
-    [style.width.px]="hostRectangle.width" [style.height.px]="0">
-
-    <div class="indicator__cta">
-      <div (mousedown)="$event.preventDefault()" (mouseup)="$event.stopPropagation();" class="indicator__cta-link">
-        <input type="text" class="form-control" />
-      </div>
-    </div>
-
-  </div>
-
-  <p contenteditable>My Data</p>
-</div> -->
-
-<div class="container" (textSelect)="renderRectangles( $event, i )" *ngFor="let line of lines; let i = index">
-  <form class="form-group" #f="ngForm" (ngSubmit)="submit()">
-    <div type="text" class="form-control" contenteditable="true" required [(ngModel)]="line.text" name="myName" (input)="applyHighlightsToField(this.selectedText, usertext)"></div>
-  </form>
-
-  <div *ngIf="line?.hostRectangle" class="indicator" [style.left.px]="line.hostRectangle?.left" [style.top.px]="line.hostRectangle?.top"
-    [style.width.px]="line?.hostRectangle?.width" [style.bottom.px]="line?.hostRectangle?.height">
-
-    <div class="indicator__cta" [styleGetter]="line?.hostRectangle?.top">
-      <div class="indicator__cta-link">
-        <input type="text" class="form-control" [(ngModel)]="selectedTextTemp" />
-        <ul *ngIf="line.items" class="list-group">
-          <li class="list-group-items" *ngFor="let item of line.items">{{ item?.selection }}</li>
-        </ul>
-      </div>
-    </div>
-
+<div class="container">
+  <div class="row">
+    <form (ngSubmit)="submitPhrases()" #f="ngForm">
+      <input type="text" [(ngModel)]="tuplesPhrases" name="tuplesPhrases" class="form-control" />
+      <button class="btn btn-primary btn-center" [disabled]="!f.valid">Submit</button>
+    </form>
   </div>
 </div>
+
+
+<ng-template [ngIf]="toggleInputs">
+  <hr>
+  <div class="container field" (textSelect)="renderRectangles( $event, i )" *ngFor="let line of lines; let i = index"
+    (domChange)="change($event)">
+    <div type="text" class="form-control" contenteditable="true" [(innerHtml)]="line[3]" name="phrase"></div>
+
+    <ng-template [ngIf]="line?.hostRectangle">
+      <div class="well entities">
+        <div class="entity" *ngFor="let key of entities | objectLoop" [style.background]="entities[key]" (click)="changeEntity(i)">
+          {{ key }}
+        </div>
+      </div>
+    </ng-template>
+
+  </div>
+</ng-template>
