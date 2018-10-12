@@ -52,7 +52,7 @@ export class AppComponent {
   // PUBLIC METHODS.
   // ---
 
-  updateLines(event: { line: any, index: number | string }) {
+  public updateLines(event: { line: any, index: number | string }) {
     let { index, line } = event;
     this.lines[index] = line;
   }
@@ -67,12 +67,12 @@ export class AppComponent {
   // I render the rectangles emitted by the [textSelect] directive.
   public renderRectangles(event: TextSelectEvent, index: number): void {
 
-    console.group("Text Select Event");
-    console.log('index', index);
-    console.log("Text:", event.text);
-    console.log("Host Rectangle:", event.hostRectangle);
-    console.groupEnd();
-    console.table(this.lines);
+    // console.group("Text Select Event");
+    // console.log('index', index);
+    // console.log("Text:", event.text);
+    // console.log("Host Rectangle:", event.hostRectangle);
+    // console.groupEnd();
+    // console.table(this.lines);
     for (let i = 0; i < this.lines.length; i++) {
       if (i !== index) {
         this.lines[i]['hostRectangle'] = null;

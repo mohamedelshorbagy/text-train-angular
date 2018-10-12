@@ -19,7 +19,7 @@ import { StoreService } from '../../services/store.service';
 
 
     <ng-template [ngIf]="line?.hostRectangle">
-      <div class="well entities">
+      <div class="card bg-light entities">
         <div class="entity" *ngFor="let key of entities | objectLoop" [style.background]="entities[key]" (click)="changeEntity(key)">
           {{ key }}
         </div>
@@ -89,10 +89,44 @@ export class PhraseComponent implements OnInit, OnDestroy {
     if (entities && entities.length) {
       this.line[1]['entities'][entityIndex][2] = entityName;
     }
+    this.store.sendIndex(-1);
     this.updateParentLines();
+  }
+
+  addEntityBySelection(entityName) {
+    // arr.splice(7, 0, "Mohamed"); // Insert in specific location
+
+
+    /**
+     * 
+     * Finite State Machine Of Selection of text
+     *                    -----> Start Of Phrase ===> unshif inside entities array
+     *    New Selection   -----> Middle Of Phrase >>>> insertInMiddelLogic
+     *                    -----> End Of Phrase ===> push inside entities array
+     * 
+     *    # insertInMiddelLogic
+     *        ----> get entities array of selected phrase
+     *        ----> for loop over elements and check two elements together
+     *        ----> check (end of first element) with (start of second element)
+     *        ----> get the (start of the new entity) and check them with previous step
+     *        ----> if (el1.end < new.start && el2.start > new.start) ==> should be inserted instead of el2
+     *    
+     * 
+     *    Select an exist entity phrase  ----> changeEntityLogic
+     *    Select an exist entity phrase from (start ,middle, end)  ----> unknow????
+     *    Select an exist entity phrase with new phrase  >>>> updateEntityLogic()
+     *    Select an exist entity phrase with another entity phrase  ----> Error Like Dialogflow or another behaviour
+     *        
+     *    # updateEntityLogic
+     *        -----> Get entities array of selected phrase 
+     *        -----> loop over them & if start of one of them === to the new.start
+     *        -----> Update end of this entity 
+     * 
+     */
 
 
   }
+
 
   ngOnDestroy() {
     this.componentRef.destroy();
@@ -172,6 +206,11 @@ export class PhraseComponent implements OnInit, OnDestroy {
          */
 
         let start = entity[0];
+        if (start !== 0 && actualEnd === -1) {
+          let tokensBetweenEntities = originalPhrase.substring(0, start);
+          phrase = phrase.substring(tokensBetweenEntities.length);
+          this.line[3].push(tokensBetweenEntities);
+        }
         let end = entity[1];
         let entityName = entity[2];
         let token = originalPhrase.substring(start, end);
