@@ -5,7 +5,7 @@ import { Subject } from "rxjs";
 })
 export class StoreService {
   event$ = new Subject();
-
+  lineIndex: number = -1;
 
   entites = {
     'CORE': '#AE8CA3',
@@ -31,7 +31,10 @@ export class StoreService {
   constructor() { }
 
   sendIndex(index) {
-    this.event$.next(index);
+    if (+index !== +this.lineIndex) {
+      this.lineIndex = index;
+      this.event$.next(index);
+    }
   }
 
   getIndex() {

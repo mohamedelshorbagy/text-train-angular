@@ -4,12 +4,13 @@
     <button class="btn btn-primary btn-center" [disabled]="!f.valid">Submit</button>
   </form>
   <hr>
-  <button class="btn btn-success" (click)="saveFile()">Save Data</button>
+  <button class="btn btn-success btn-center" (click)="saveFile()">Save Data</button>
+  <hr>
 </div>
 <ng-template [ngIf]="toggleInputs">
   <hr>
   <div class="container field" (textSelect)="renderRectangles( $event, i )" *ngFor="let line of lines; let i = index">
-    <app-phrase [line]="line" [entities]="entities" [lineIndex]="i">
+    <app-phrase [line]="line" [entities]="entities" [lineIndex]="i" (updateLines)="updateLines($event)">
     </app-phrase>
 
   </div>

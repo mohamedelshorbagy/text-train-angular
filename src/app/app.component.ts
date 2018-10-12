@@ -29,10 +29,8 @@ export class AppComponent {
     this.entities = this.store.getEntities();
 
 
-    this.store.getIndex().forEach((event: number) => {
-      if (typeof event === 'number') {
-        this.removeSelection(+event);
-      }
+    this.store.getIndex().forEach((event) => {
+      this.removeSelection(+event);
     })
 
 
@@ -53,6 +51,11 @@ export class AppComponent {
   // ---
   // PUBLIC METHODS.
   // ---
+
+  updateLines(event: { line: any, index: number | string }) {
+    let { index, line } = event;
+    this.lines[index] = line;
+  }
 
   public saveFile() {
     let tuples = this.store.arrays2Tuples(this.lines);

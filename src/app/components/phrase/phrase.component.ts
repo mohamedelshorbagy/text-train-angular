@@ -20,9 +20,10 @@ import { StoreService } from '../../services/store.service';
 
     <ng-template [ngIf]="line?.hostRectangle">
       <div class="well entities">
-        <div class="entity" *ngFor="let key of entities | objectLoop" [style.background]="entities[key]">
+        <div class="entity" *ngFor="let key of entities | objectLoop" [style.background]="entities[key]" (click)="changeEntity(key)">
           {{ key }}
         </div>
+        <button class="btn btn-danger" (click)="removeEntity()">X</button>
       </div>
     </ng-template>
 
@@ -36,7 +37,8 @@ export class PhraseComponent implements OnInit, OnDestroy {
   @Input() line: any;
   @Input() lineIndex: number;
   @Input() entities: any;
-
+  @Output() updateLines: EventEmitter<any> = new EventEmitter<any>()
+  entityIndex: number | string = -1;
 
   @ViewChild('container', { read: ViewContainerRef })
   container: ViewContainerRef;
@@ -57,15 +59,39 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
   triggerChange(event) {
     let newText = event.target.innerText;
-    console.log(newText);
-    this.getEntitesFromPhrase(newText);
+    this.updateParentLines(newText);
+  }
 
+  removeEntity() {
+    this.line[1]['entities'].splice(+this.entityIndex, 1);
+    this.store.sendIndex(-1);
+    this.updateParentLines();
+  }
 
+  updateParentLines(text?: string) {
+    let textParam = null;
+    if (text && (text !== '')) {
+      textParam = text;
+    }
+    this.getEntitesFromPhrase(textParam);
+    this.updateLines.emit({ line: this.line, index: this.lineIndex });
   }
 
 
-  removeSelection() {
+  selectPhrase(entityIndex: number | string) {
+    this.entityIndex = entityIndex;
     this.store.sendIndex(this.lineIndex);
+  }
+
+  changeEntity(entityName) {
+    let entityIndex = this.entityIndex;
+    let entities = this.line[1]['entities'];
+    if (entities && entities.length) {
+      this.line[1]['entities'][entityIndex][2] = entityName;
+    }
+    this.updateParentLines();
+
+
   }
 
   ngOnDestroy() {
@@ -89,8 +115,12 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
     this.componentRef = this.container.createComponent(factory);
     let instance = <DynamicComponent>this.componentRef.instance;
+    /**
+     * 
+     * Inputs, Outputs of created component
+     */
     instance.line = this.line;
-    instance.closeAll.subscribe(this.removeSelection.bind(this));
+    instance.selectPhrase.subscribe(this.selectPhrase.bind(this));
   }
 
   private createComponentFactorySync(compiler: Compiler, metadata: Component, componentClass?: any): ComponentFactory<any> {
@@ -102,11 +132,10 @@ export class PhraseComponent implements OnInit, OnDestroy {
     } else {
       @Component(metadata)
       class RuntimeComponent {
-        line: any;
-        @Output() closeAll: EventEmitter<any> = new EventEmitter<any>();
-        showEntities(idx, ent) {
-          console.log(idx, ent, 'inside OTF');
-          this.closeAll.next();
+        @Input() line: any;
+        @Output() selectPhrase: EventEmitter<any> = new EventEmitter<any>();
+        showEntities(lineIndex, entityIndex) {
+          this.selectPhrase.emit(entityIndex);
         }
       };
       decoratedCmp = RuntimeComponent;
@@ -124,15 +153,14 @@ export class PhraseComponent implements OnInit, OnDestroy {
     let phrase;
     if (text) {
       phrase = text;
+      this.line[0] = phrase;
     } else {
       phrase = this.line[0];
     }
-    console.log('phrase ===>', phrase);
     let entities = this.line[1]['entities']; // Array
     this.line[2] = phrase;
     let originalPhrase = this.line[2]; // original phrase
     this.line[3] = []; // output content
-    let endTotal = 0;
     let actualEnd = -1;
     if (entities && entities.length) { // Exist
       for (let j = 0; j < entities.length; j++) {
@@ -148,24 +176,17 @@ export class PhraseComponent implements OnInit, OnDestroy {
         let entityName = entity[2];
         let token = originalPhrase.substring(start, end);
         if (actualEnd < start && actualEnd !== -1) {
-          console.log(actualEnd, 0);
           let tokensBetweenEntities = originalPhrase.substring(actualEnd, start);
-          console.log(3, phrase, actualEnd, start);
           phrase = phrase.substring(tokensBetweenEntities.length);
-          console.log(1, tokensBetweenEntities);
-          console.log(2, phrase);
           this.line[3].push(tokensBetweenEntities);
         }
-        console.log(8, token);
         phrase = phrase.substring(token.length);
-        endTotal += end;
         actualEnd = end;
         let tokenWithEntity = `<span [ngStyle]="{ 
           'background-color' : '${this.entities[entityName]}', 
-          'pointer': 'cursor' 
+          'cursor': 'pointer' 
         }" (click)="showEntities(${this.lineIndex}, ${j})">${token}</span>`;
         this.line[3].push(tokenWithEntity);
-        console.log(20, phrase);
       }
       this.line[3].push(phrase);
     }
@@ -176,7 +197,6 @@ export class PhraseComponent implements OnInit, OnDestroy {
       return acc += elm;
     }, '');
     this.line[4] = tempString;
-    console.log(this.line);
     this.compileTemplate();
 
   }
@@ -186,5 +206,5 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
 export abstract class DynamicComponent {
   line: any;
-  closeAll: EventEmitter<any>;
+  selectPhrase: EventEmitter<any>;
 }
