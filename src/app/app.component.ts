@@ -5,6 +5,7 @@ import { Component } from "@angular/core";
 // Import the application components and services.
 import { TextSelectEvent } from "./directives/text-selection.directive";
 import { StoreService } from "./services/store.service";
+import { FileSaverService } from "ngx-filesaver";
 
 @Component({
   selector: "app-root",
@@ -19,7 +20,8 @@ export class AppComponent {
   entities: any;
 
   constructor(
-    private store: StoreService) {
+    private store: StoreService,
+    private fileSaver: FileSaverService) {
 
   }
 
@@ -51,6 +53,13 @@ export class AppComponent {
   // ---
   // PUBLIC METHODS.
   // ---
+
+  public saveFile() {
+    let tuples = this.store.arrays2Tuples(this.lines);
+    let data = new Blob([tuples], { type: "text/plain;charset=utf-8" });
+    this.fileSaver.save(data, 'data-angular.txt');
+
+  }
 
   // I render the rectangles emitted by the [textSelect] directive.
   public renderRectangles(event: TextSelectEvent, index: number): void {

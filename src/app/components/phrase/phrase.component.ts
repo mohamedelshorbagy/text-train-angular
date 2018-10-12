@@ -12,7 +12,7 @@ import { StoreService } from '../../services/store.service';
   template: `
     <div>
     <form #testForm="ngForm">
-      <div type="text" class="form-control" contenteditable="true" (input)="triggerChange($event)" name="phrase">
+      <div type="text" class="form-control" contenteditable="true" (blur)="triggerChange($event)" name="phrase">
         <ng-template #container></ng-template>
       </div>
     </form>
@@ -52,7 +52,14 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.getEntitesFromPhrase();
-    console.log(this.store.getEntities());
+
+  }
+
+  triggerChange(event) {
+    let newText = event.target.innerText;
+    console.log(newText);
+    this.getEntitesFromPhrase(newText);
+
 
   }
 
@@ -73,7 +80,7 @@ export class PhraseComponent implements OnInit, OnDestroy {
       selector: `runtime-component-sample`,
       template: this.line[4]
     };
-    let factory = this.createComponentFactorySync(this.compiler, metadata, null);
+    let factory = this.createComponentFactorySync(this.compiler, metadata);
 
     if (this.componentRef) {
       this.componentRef.destroy();
@@ -86,16 +93,24 @@ export class PhraseComponent implements OnInit, OnDestroy {
     instance.closeAll.subscribe(this.removeSelection.bind(this));
   }
 
-  private createComponentFactorySync(compiler: Compiler, metadata: Component, componentClass: any): ComponentFactory<any> {
-    const cmpClass = componentClass || class RuntimeComponent {
-      line: any;
-      @Output() closeAll: EventEmitter<any> = new EventEmitter<any>();
-      showEntities(idx, ent) {
-        console.log(idx, ent, 'inside OTF');
-        this.closeAll.next();
-      }
-    };
-    const decoratedCmp = Component(metadata)(cmpClass);
+  private createComponentFactorySync(compiler: Compiler, metadata: Component, componentClass?: any): ComponentFactory<any> {
+    let cmpClass;
+    let decoratedCmp;
+    if (componentClass) {
+      cmpClass = componentClass;
+      decoratedCmp = Component(metadata)(cmpClass);
+    } else {
+      @Component(metadata)
+      class RuntimeComponent {
+        line: any;
+        @Output() closeAll: EventEmitter<any> = new EventEmitter<any>();
+        showEntities(idx, ent) {
+          console.log(idx, ent, 'inside OTF');
+          this.closeAll.next();
+        }
+      };
+      decoratedCmp = RuntimeComponent;
+    }
 
     @NgModule({ imports: [CommonModule], declarations: [decoratedCmp] })
     class RuntimeComponentModule { }
@@ -105,13 +120,20 @@ export class PhraseComponent implements OnInit, OnDestroy {
   }
 
 
-  getEntitesFromPhrase() {
-    let phrase = this.line[0];
+  getEntitesFromPhrase(text?: string) {
+    let phrase;
+    if (text) {
+      phrase = text;
+    } else {
+      phrase = this.line[0];
+    }
+    console.log('phrase ===>', phrase);
     let entities = this.line[1]['entities']; // Array
     this.line[2] = phrase;
     let originalPhrase = this.line[2]; // original phrase
     this.line[3] = []; // output content
     let endTotal = 0;
+    let actualEnd = -1;
     if (entities && entities.length) { // Exist
       for (let j = 0; j < entities.length; j++) {
         let entity = entities[j];
@@ -125,15 +147,38 @@ export class PhraseComponent implements OnInit, OnDestroy {
         let end = entity[1];
         let entityName = entity[2];
         let token = originalPhrase.substring(start, end);
-        phrase = phrase.substr(end - endTotal);
-        endTotal = end;
-        let tokenWithEntity = `<span [ngStyle]="{ 'background-color' : '${this.entities[entityName]}' , 'pointer': 'cursor' }" (click)="showEntities(${this.lineIndex}, ${j})">${token}</span>`;
+        if (actualEnd < start && actualEnd !== -1) {
+          console.log(actualEnd, 0);
+          let tokensBetweenEntities = originalPhrase.substring(actualEnd, start);
+          console.log(3, phrase, actualEnd, start);
+          phrase = phrase.substring(tokensBetweenEntities.length);
+          console.log(1, tokensBetweenEntities);
+          console.log(2, phrase);
+          this.line[3].push(tokensBetweenEntities);
+        }
+        console.log(8, token);
+        phrase = phrase.substring(token.length);
+        endTotal += end;
+        actualEnd = end;
+        let tokenWithEntity = `<span [ngStyle]="{ 
+          'background-color' : '${this.entities[entityName]}', 
+          'pointer': 'cursor' 
+        }" (click)="showEntities(${this.lineIndex}, ${j})">${token}</span>`;
         this.line[3].push(tokenWithEntity);
+        console.log(20, phrase);
       }
       this.line[3].push(phrase);
     }
-    this.line[4] = this.line[3].join('');
+    let tempString = this.line[3].reduce((acc, elm, idx) => {
+      if (elm === " ") {
+        return acc += '&nbsp;';
+      }
+      return acc += elm;
+    }, '');
+    this.line[4] = tempString;
+    console.log(this.line);
     this.compileTemplate();
+
   }
 
 }

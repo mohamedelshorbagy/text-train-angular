@@ -10,8 +10,7 @@ import { PhraseComponent } from './components/phrase/phrase.component';
 import { StoreService } from './services/store.service'
 import { FileOpService } from './services/file-op.service';
 import { LoopOverObjectsPipe } from './pipes/loop-over-objects.pipe';
-import { SanitizeHtmlPipe } from './pipes/sanitize.pipe';
-
+import { FileSaverModule } from 'ngx-filesaver';
 
 @NgModule({
   declarations: [
@@ -19,16 +18,17 @@ import { SanitizeHtmlPipe } from './pipes/sanitize.pipe';
     TextSelectDirective,
     PhraseComponent,
     LoopOverObjectsPipe,
-    SanitizeHtmlPipe
   ],
   imports: [
     BrowserModule,
     FormsModule,
-    ContenteditableModule
+    ContenteditableModule,
+    FileSaverModule
   ],
   providers: [
     StoreService,
-    FileOpService
+    FileOpService,
+
   ],
   bootstrap: [AppComponent]
 })
