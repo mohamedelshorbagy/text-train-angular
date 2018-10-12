@@ -1,26 +1,18 @@
 <div class="container">
-  <div class="row">
-    <form (ngSubmit)="submitPhrases()" #f="ngForm">
-      <input type="text" [(ngModel)]="tuplesPhrases" name="tuplesPhrases" class="form-control" />
-      <button class="btn btn-primary btn-center" [disabled]="!f.valid">Submit</button>
-    </form>
-  </div>
+  <form (ngSubmit)="submitPhrases()" #f="ngForm">
+    <input type="text" [(ngModel)]="tuplesPhrases" name="tuplesPhrases" class="form-control" />
+    <button class="btn btn-primary btn-center" [disabled]="!f.valid">Submit</button>
+  </form>
 </div>
-
-
 <ng-template [ngIf]="toggleInputs">
   <hr>
-  <div class="container field" (textSelect)="renderRectangles( $event, i )" *ngFor="let line of lines; let i = index"
-    (domChange)="change($event)">
-    <div type="text" class="form-control" contenteditable="true" [(innerHtml)]="line[3]" name="phrase"></div>
-
-    <ng-template [ngIf]="line?.hostRectangle">
-      <div class="well entities">
-        <div class="entity" *ngFor="let key of entities | objectLoop" [style.background]="entities[key]" (click)="changeEntity(i)">
-          {{ key }}
-        </div>
-      </div>
-    </ng-template>
+  <div class="container field" (textSelect)="renderRectangles( $event, i )" *ngFor="let line of lines; let i = index">
+    <app-phrase 
+      [line]="line" 
+      [entities]="entities" 
+      [lineIndex]="i"
+    >
+    </app-phrase>
 
   </div>
 </ng-template>

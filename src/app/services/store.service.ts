@@ -1,9 +1,12 @@
 import { Injectable } from '@angular/core';
-
+import { Subject } from "rxjs";
 @Injectable({
   providedIn: 'root'
 })
 export class StoreService {
+  event$ = new Subject();
+
+
   entites = {
     'CORE': '#AE8CA3',
     'ACTION': '#9EE493',
@@ -26,6 +29,14 @@ export class StoreService {
     'AFTER_CORE': '#6c5ce7'
   };
   constructor() { }
+
+  sendIndex(index) {
+    this.event$.next(index);
+  }
+
+  getIndex() {
+    return this.event$.asObservable();
+  }
 
 
   public tuple2Arrays(tuples) {
@@ -76,5 +87,9 @@ export class StoreService {
     }
     return term;
   }
+
+
+
+
 
 }

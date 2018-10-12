@@ -1,7 +1,6 @@
 
 // Import the core angular services.
 import { Component } from "@angular/core";
-import { DomSanitizer } from "@angular/platform-browser";
 
 // Import the application components and services.
 import { TextSelectEvent } from "./directives/text-selection.directive";
@@ -20,8 +19,7 @@ export class AppComponent {
   entities: any;
 
   constructor(
-    private store: StoreService,
-    public _sanitizer: DomSanitizer) {
+    private store: StoreService) {
 
   }
 
@@ -29,10 +27,24 @@ export class AppComponent {
     this.entities = this.store.getEntities();
 
 
+    this.store.getIndex().forEach((event: number) => {
+      if (typeof event === 'number') {
+        this.removeSelection(+event);
+      }
+    })
 
 
+  }
 
 
+  private removeSelection(index: number) {
+    for (let i = 0; i < this.lines.length; i++) {
+      if (i === index) {
+        this.lines[i]['hostRectangle'] = true;
+      } else {
+        this.lines[i]['hostRectangle'] = false;
+      }
+    }
   }
 
 
@@ -90,46 +102,9 @@ export class AppComponent {
   public submitPhrases() {
     this.toggleInputs = true;
     this.lines = this.store.tuple2Arrays(this.tuplesPhrases);
-    this.getEntitesFromPhrase();
 
   }
 
 
-  getEntitesFromPhrase() {
-    for (let i = 0; i < this.lines.length; i++) {
-      let phrase = this.lines[i][0];
-      let entites = this.lines[i][1]['entities']; // Array
-      this.lines[i][2] = phrase;
-      if (entites && entites.length) { // Exist
-        for (let j = 0; j < entites.length; j++) {
-          let entity = entites[j];
-          /**
-           * 0 => Start
-           * 1 => End
-           * 3 => Entity Name
-           */
-          let start = entity[0];
-          let end = entity[1];
-          let entityName = entity[2];
-          let token = phrase.substring(start, end);
-          let tokenWithEntity = `<span entity="${entityName}" style="background-color: ${this.entities[entityName]}">${token}</span>`;
-          this.lines[i][0] = this.lines[i][0].replace(token, tokenWithEntity);
-        }
-        this.lines[i][3] = this._sanitizer.bypassSecurityTrustHtml(this.lines[i][0]);
-      }
-    }
-
-  }
-
-
-  public changeEntity(index: number) {
-    console.log(index);
-
-  }
-
-
-  public change(event) {
-    console.log(event);
-  }
 
 }
