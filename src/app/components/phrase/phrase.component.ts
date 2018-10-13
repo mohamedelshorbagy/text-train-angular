@@ -6,11 +6,12 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { StoreService } from '../../services/store.service';
+import { TextSelectEvent } from "../../directives/text-selection.directive";
 
 @Component({
   selector: 'app-phrase',
   template: `
-    <div>
+    <div class="container field" (textSelect)="renderRectangles($event)">
     <form #testForm="ngForm">
       <div type="text" class="form-control" contenteditable="true" (blur)="triggerChange($event)" name="phrase">
         <ng-template #container></ng-template>
@@ -39,7 +40,7 @@ export class PhraseComponent implements OnInit, OnDestroy {
   @Input() entities: any;
   @Output() updateLines: EventEmitter<any> = new EventEmitter<any>()
   entityIndex: number | string = -1;
-
+  selection: boolean = false;
   @ViewChild('container', { read: ViewContainerRef })
   container: ViewContainerRef;
 
@@ -80,10 +81,142 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
   selectPhrase(entityIndex: number | string) {
     this.entityIndex = entityIndex;
+    this.selection = false;
     this.store.sendIndex(this.lineIndex);
   }
 
+  public renderRectangles(event: TextSelectEvent): void {
+    this.selection = true;
+    console.group("Text Select Event");
+    console.log("Text:", event.text);
+    console.log("Host Rectangle:", event.hostRectangle);
+    console.groupEnd();
+    this.store.sendIndex(this.lineIndex);
+    if (event.text) {
+      this.line['selectedText'] = event.text;
+    }
+    console.log(this.line['selectedText']);
+
+
+    // If a new selection has been created, the viewport and host rectangles will
+    // exist. Or, if a selection is being removed, the rectangles will be null.
+    if (event.hostRectangle) {
+      this.line['hostRectangle'] = true;
+    } else {
+      this.store.sendIndex(this.lineIndex);
+
+    }
+
+  }
+
+
   changeEntity(entityName) {
+    if (!this.selection) {
+      // Clicked in entity word
+      this.updateExistedEntityWord(entityName);
+
+    } else {
+      /**
+       * Selection
+       * 
+       */
+      let entityObj = this.getEntityObject(entityName);
+      let newEntityItem = [
+        entityObj.start,
+        entityObj.end,
+        entityObj.type
+      ];
+      let entities = this.line[1]['entities'];
+
+      let checkIndexIfExisted = this.checkIfExtendExistedEntity(newEntityItem, entities);
+
+      if (checkIndexIfExisted !== -1) {
+        this.line[1]['entities'][checkIndexIfExisted] = newEntityItem;
+        this.store.sendIndex(-1);
+        this.updateParentLines();
+        return;
+      }
+
+      let entitiesLen = this.line[1]['entities'].length;
+      let firstEntityStartPos = this.line[1]['entities'][0][0];
+      let lastEntityEndPos = this.line[1]['entities'][entitiesLen - 1][1];
+
+      /**
+       * 
+       * Case Of Start Of Phrase
+       * 
+       */
+      if (firstEntityStartPos > newEntityItem[0]) {
+        this.line[1]['entities'].splice(0, 0, newEntityItem);
+        this.store.sendIndex(-1);
+        this.updateParentLines();
+        return;
+
+      }
+      /**
+       * 
+       * Case Of end Of Phrase
+       */
+      if (lastEntityEndPos < newEntityItem[1]) {
+        this.line[1]['entities'].splice(entitiesLen + 1, 0, newEntityItem);
+        this.store.sendIndex(-1);
+        this.updateParentLines();
+        return;
+
+      }
+
+      for (let i = 0; i < entities.length - 1; i++) {
+        let fStart = entities[i][0];
+        let sEnd = entities[i + 1][1];
+        let iStart = newEntityItem[0];
+        if (fStart < iStart && sEnd > iStart) {
+          this.line[1]['entities'].splice(i + 1, 0, newEntityItem);
+          this.store.sendIndex(-1);
+          this.updateParentLines();
+          return;
+        }
+      }
+
+
+    }
+  }
+
+
+  checkIfExtendExistedEntity(entity, entities): number {
+
+    let iStart = entity[0];
+
+    for (let i = 0; i < entities.length; i++) {
+      let fStart = entities[i][0];
+      if (fStart === iStart) {
+        return i;
+      }
+    }
+    return -1;
+
+
+  }
+
+  getEntityObject(entityName: string) {
+    let startIndex = this.line[2].indexOf(this.line['selectedText']);
+    let wordLen = this.line['selectedText'].length;
+    let endIndex = Math.abs((startIndex + wordLen));
+    console.group('Selected Text');
+    console.log('word', this.line['selectedText']);
+    console.log('index', startIndex);
+    console.log('endIndex', endIndex);
+    console.log('length', wordLen);
+    console.groupEnd()
+    return {
+      start: startIndex,
+      end: endIndex,
+      type: entityName
+    }
+
+  }
+
+
+  updateExistedEntityWord(entityName) {
     let entityIndex = this.entityIndex;
     let entities = this.line[1]['entities'];
     if (entities && entities.length) {
@@ -91,6 +224,7 @@ export class PhraseComponent implements OnInit, OnDestroy {
     }
     this.store.sendIndex(-1);
     this.updateParentLines();
+
   }
 
   addEntityBySelection(entityName) {
@@ -100,11 +234,11 @@ export class PhraseComponent implements OnInit, OnDestroy {
     /**
      * 
      * Finite State Machine Of Selection of text
-     *                    -----> Start Of Phrase ===> unshif inside entities array
-     *    New Selection   -----> Middle Of Phrase >>>> insertInMiddelLogic
-     *                    -----> End Of Phrase ===> push inside entities array
+     *                    -----> Start Of Phrase ===> unshif inside entities array ==> %Done
+     *    @@@ Selection   -----> Middle Of Phrase >>>> insertInMiddelLogic ==> %Done
+     *                    -----> End Of Phrase ===> push inside entities array ==> %Done
      * 
-     *    # insertInMiddelLogic
+     *    # insertInMiddelLogic %Done
      *        ----> get entities array of selected phrase
      *        ----> for loop over elements and check two elements together
      *        ----> check (end of first element) with (start of second element)
@@ -112,12 +246,12 @@ export class PhraseComponent implements OnInit, OnDestroy {
      *        ----> if (el1.end < new.start && el2.start > new.start) ==> should be inserted instead of el2
      *    
      * 
-     *    Select an exist entity phrase  ----> changeEntityLogic
+     *    Select an exist entity phrase  ----> updateExistedEntityWord ==> %Done
      *    Select an exist entity phrase from (start ,middle, end)  ----> unknow????
-     *    Select an exist entity phrase with new phrase  >>>> updateEntityLogic()
+     *    Select an exist entity phrase with new phrase  >>>> updateEntityLogic() ==> %Done
      *    Select an exist entity phrase with another entity phrase  ----> Error Like Dialogflow or another behaviour
      *        
-     *    # updateEntityLogic
+     *    # updateEntityLogic %Done
      *        -----> Get entities array of selected phrase 
      *        -----> loop over them & if start of one of them === to the new.start
      *        -----> Update end of this entity 

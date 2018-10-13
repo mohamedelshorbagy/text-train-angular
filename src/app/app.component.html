@@ -9,7 +9,7 @@
 </div>
 <ng-template [ngIf]="toggleInputs">
   <hr>
-  <div class="container field" (textSelect)="renderRectangles( $event, i )" *ngFor="let line of lines; let i = index">
+  <div *ngFor="let line of lines; let i = index">
     <app-phrase [line]="line" [entities]="entities" [lineIndex]="i" (updateLines)="updateLines($event)">
     </app-phrase>
 
