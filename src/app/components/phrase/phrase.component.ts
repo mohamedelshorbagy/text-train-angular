@@ -24,7 +24,9 @@ import { TextSelectEvent } from "../../directives/text-selection.directive";
         <div class="entity" *ngFor="let key of entities | objectLoop" [style.background]="entities[key]" (click)="changeEntity(key)">
           {{ key }}
         </div>
-        <button class="btn btn-danger" (click)="removeEntity()">X</button>
+        <div class="icon" (click)="removeEntity()">
+          <i class="fa fa-trash"></i>
+        </div>
       </div>
     </ng-template>
 
