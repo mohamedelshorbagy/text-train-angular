@@ -539,7 +539,7 @@ if(false) {}
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /home/shorbagy/work/botit/text-train-angular/src/styles.css */"./src/styles.css");
+module.exports = __webpack_require__(/*! /home/guest/projects/ui-train/src/styles.css */"./src/styles.css");
 
 
 /***/ })

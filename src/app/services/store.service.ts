@@ -44,8 +44,7 @@ export class StoreService {
 
   public tuple2Arrays(tuples) {
     tuples = tuples.replace(/\(/g, '[').replace(/\)/g, ']');
-    let result = eval(tuples);
-    return result;
+    return Function(`return (${tuples});`)();
   }
 
   public arrays2Tuples(array) {

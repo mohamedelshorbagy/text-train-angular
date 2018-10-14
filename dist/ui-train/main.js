@@ -950,8 +950,7 @@ var StoreService = /** @class */ (function () {
     };
     StoreService.prototype.tuple2Arrays = function (tuples) {
         tuples = tuples.replace(/\(/g, '[').replace(/\)/g, ']');
-        var result = eval(tuples);
-        return result;
+        return Function("return (" + tuples + ");")();
     };
     StoreService.prototype.arrays2Tuples = function (array) {
         var _this = this;
@@ -1067,7 +1066,7 @@ Object(_angular_platform_browser_dynamic__WEBPACK_IMPORTED_MODULE_1__["platformB
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(/*! /home/shorbagy/work/botit/text-train-angular/src/main.ts */"./src/main.ts");
+module.exports = __webpack_require__(/*! /home/guest/projects/ui-train/src/main.ts */"./src/main.ts");
 
 
 /***/ })
