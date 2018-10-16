@@ -8,6 +8,15 @@
   <hr>
 </div>
 <ng-template [ngIf]="toggleInputs">
+  <div class="add-line container">
+    <form #addLine="ngForm" (ngSubmit)="addNewLine(addLine)" class="form-group add__line">
+      <input type="text" ngModel #line="ngModel" name="line" class="form-control" required />
+
+      <button class="btn btn-default" type="submit" [disabled]="!f.valid">
+        <i class="fa fa-plus"></i>
+      </button>
+    </form>
+  </div>
   <hr>
   <div *ngFor="let line of lines; let i = index">
     <app-phrase [line]="line" [entities]="entities" [lineIndex]="i" (updateLines)="updateLines($event)">

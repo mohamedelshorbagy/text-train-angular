@@ -130,6 +130,13 @@ export class PhraseComponent implements OnInit, OnDestroy {
       ];
       let entities = this.line[1]['entities'];
 
+      /*** Case of empty Phrase  */
+      if (entities && (entities.length === 0)) {
+        this.line[1]['entities'].push(newEntityItem);
+        this.store.sendIndex(-1);
+        this.updateParentLines();
+        return;
+      }
       let checkIndexIfExisted = this.checkIfExtendExistedEntity(newEntityItem, entities);
 
       if (checkIndexIfExisted !== -1) {
@@ -363,8 +370,8 @@ export class PhraseComponent implements OnInit, OnDestroy {
         }" (click)="showEntities(${this.lineIndex}, ${j})">${token}</span>`;
         this.line[3].push(tokenWithEntity);
       }
-      this.line[3].push(phrase);
     }
+    this.line[3].push(phrase);
     let tempString = this.line[3].reduce((acc, elm, idx) => {
       if (elm === " ") {
         return acc += '&nbsp;';

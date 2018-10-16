@@ -30,7 +30,7 @@ webpackEmptyAsyncContext.id = "./src/$$_lazy_route_resource lazy recursive";
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = ":host {\n    display: block;\n    font-size: 18px;\n}\n\n*, *::before, *::after {\n    box-sizing: border-box;\n}\n\n.container {\n    position: relative;\n}\n\nform {\n    margin-top: 15px;\n}\n\ninput {\n    margin-bottom: 15px;\n}\n\n.btn-center {\n    margin-left: 50%;\n    -webkit-transform: translateX(-50%);\n            transform: translateX(-50%);\n}\n\n.field {\n    margin-bottom: 15px;\n}"
+module.exports = ":host {\n    display: block;\n    font-size: 18px;\n}\n\n*, *::before, *::after {\n    box-sizing: border-box;\n}\n\n.container {\n    position: relative;\n}\n\nform {\n    margin-top: 15px;\n}\n\ninput {\n    margin-bottom: 15px;\n}\n\n.btn-center {\n    margin-left: 50%;\n    -webkit-transform: translateX(-50%);\n            transform: translateX(-50%);\n}\n\n.field {\n    margin-bottom: 15px;\n}\n\ninput.ng-touched.ng-invalid {\n    border: 1px solid rgb(231, 70, 96);\n}\n\n.add__line {\n    display: flex;\n    align-items: center;\n    justify-content: center;\n}\n\n.add__line input {\n    margin-bottom: 0;\n    margin-right: 5px;\n}"
 
 /***/ }),
 
@@ -41,7 +41,7 @@ module.exports = ":host {\n    display: block;\n    font-size: 18px;\n}\n\n*, *:
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-module.exports = "<div class=\"container\">\n  <form (ngSubmit)=\"submitPhrases()\" #f=\"ngForm\">\n    <input type=\"text\" [(ngModel)]=\"tuplesPhrases\" name=\"tuplesPhrases\" class=\"form-control\" />\n    <button class=\"btn btn-primary btn-center\" [disabled]=\"!f.valid\">Submit</button>\n  </form>\n  <hr>\n  <button class=\"btn btn-success btn-center\" (click)=\"saveFile()\">Save Data</button>\n  <hr>\n</div>\n<ng-template [ngIf]=\"toggleInputs\">\n  <hr>\n  <div *ngFor=\"let line of lines; let i = index\">\n    <app-phrase [line]=\"line\" [entities]=\"entities\" [lineIndex]=\"i\" (updateLines)=\"updateLines($event)\">\n    </app-phrase>\n\n  </div>\n</ng-template>"
+module.exports = "<div class=\"container\">\n  <form (ngSubmit)=\"submitPhrases()\" #f=\"ngForm\">\n    <input type=\"text\" [(ngModel)]=\"tuplesPhrases\" name=\"tuplesPhrases\" class=\"form-control\" />\n    <button class=\"btn btn-primary btn-center\" [disabled]=\"!f.valid\">Submit</button>\n  </form>\n  <hr>\n  <button class=\"btn btn-success btn-center\" (click)=\"saveFile()\">Save Data</button>\n  <hr>\n</div>\n<ng-template [ngIf]=\"toggleInputs\">\n  <div class=\"add-line container\">\n    <form #addLine=\"ngForm\" (ngSubmit)=\"addNewLine(addLine)\" class=\"form-group add__line\">\n      <input type=\"text\" ngModel #line=\"ngModel\" name=\"line\" class=\"form-control\" required />\n\n      <button class=\"btn btn-default\" type=\"submit\" [disabled]=\"!f.valid\">\n        <i class=\"fa fa-plus\"></i>\n      </button>\n    </form>\n  </div>\n  <hr>\n  <div *ngFor=\"let line of lines; let i = index\">\n    <app-phrase [line]=\"line\" [entities]=\"entities\" [lineIndex]=\"i\" (updateLines)=\"updateLines($event)\">\n    </app-phrase>\n\n  </div>\n</ng-template>"
 
 /***/ }),
 
@@ -84,6 +84,17 @@ var AppComponent = /** @class */ (function () {
             _this.removeSelection(+event);
         });
     };
+    AppComponent.prototype.addNewLine = function (f) {
+        var newPhrase = f.value.line;
+        console.log(f);
+        var line = [
+            newPhrase,
+            {
+                entities: []
+            }
+        ];
+        this.lines.push(line);
+    };
     AppComponent.prototype.removeSelection = function (index) {
         for (var i = 0; i < this.lines.length; i++) {
             if (i === index) {
@@ -105,46 +116,6 @@ var AppComponent = /** @class */ (function () {
         var tuples = this.store.arrays2Tuples(this.lines);
         var data = new Blob([tuples], { type: "text/plain;charset=utf-8" });
         this.fileSaver.save(data, 'data-angular.txt');
-    };
-    // I render the rectangles emitted by the [textSelect] directive.
-    AppComponent.prototype.renderRectangles = function (event, index) {
-        // console.group("Text Select Event");
-        // console.log('index', index);
-        // console.log("Text:", event.text);
-        // console.log("Host Rectangle:", event.hostRectangle);
-        // console.groupEnd();
-        // console.table(this.lines);
-        for (var i = 0; i < this.lines.length; i++) {
-            if (i !== index) {
-                this.lines[i]['hostRectangle'] = null;
-            }
-        }
-        if (event.text) {
-            this.lines[index]['selectedText'] = event.text;
-        }
-        // If a new selection has been created, the viewport and host rectangles will
-        // exist. Or, if a selection is being removed, the rectangles will be null.
-        if (event.hostRectangle) {
-            this.lines[index]['hostRectangle'] = event.hostRectangle;
-        }
-        else {
-            for (var i = 0; i < this.lines.length; i++) {
-                if (i !== index) {
-                    this.lines[i]['hostRectangle'] = null;
-                }
-            }
-        }
-    };
-    // I share the selected text with friends :)
-    AppComponent.prototype.shareSelection = function () {
-        console.group("Shared Text");
-        console.groupEnd();
-        // Now that we've shared the text, let's clear the current selection.
-        document.getSelection().removeAllRanges();
-        // CAUTION: In modern browsers, the above call triggers a "selectionchange"
-        // event, which implicitly calls our renderRectangles() callback. However,
-        // in IE, the above call doesn't appear to trigger the "selectionchange"
-        // event. As such, we need to remove the host rectangle explicitly.
     };
     AppComponent.prototype.submitPhrases = function () {
         this.toggleInputs = true;
@@ -344,6 +315,13 @@ var PhraseComponent = /** @class */ (function () {
                 entityObj.type
             ];
             var entities = this.line[1]['entities'];
+            /*** Case of empty Phrase  */
+            if (entities && (entities.length === 0)) {
+                this.line[1]['entities'].push(newEntityItem);
+                this.store.sendIndex(-1);
+                this.updateParentLines();
+                return;
+            }
             var checkIndexIfExisted = this.checkIfExtendExistedEntity(newEntityItem, entities);
             if (checkIndexIfExisted !== -1) {
                 this.line[1]['entities'][checkIndexIfExisted] = newEntityItem;
@@ -558,8 +536,8 @@ var PhraseComponent = /** @class */ (function () {
                 var tokenWithEntity = "<span [ngStyle]=\"{ \n          'background-color' : '" + this.entities[entityName] + "', \n          'cursor': 'pointer' \n        }\" (click)=\"showEntities(" + this.lineIndex + ", " + j + ")\">" + token + "</span>";
                 this.line[3].push(tokenWithEntity);
             }
-            this.line[3].push(phrase);
         }
+        this.line[3].push(phrase);
         var tempString = this.line[3].reduce(function (acc, elm, idx) {
             if (elm === " ") {
                 return acc += '&nbsp;';
