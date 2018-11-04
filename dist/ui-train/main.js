@@ -93,7 +93,7 @@ var AppComponent = /** @class */ (function () {
                 entities: []
             }
         ];
-        this.lines.push(line);
+        this.lines.unshift(line);
     };
     AppComponent.prototype.removeSelection = function (index) {
         for (var i = 0; i < this.lines.length; i++) {
@@ -232,6 +232,14 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _angular_core__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! @angular/core */ "./node_modules/@angular/core/fesm5/core.js");
 /* harmony import */ var _angular_common__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! @angular/common */ "./node_modules/@angular/common/fesm5/common.js");
 /* harmony import */ var _services_store_service__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ../../services/store.service */ "./src/app/services/store.service.ts");
+var __assign = (undefined && undefined.__assign) || Object.assign || function(t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+        s = arguments[i];
+        for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+            t[p] = s[p];
+    }
+    return t;
+};
 var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
     if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
@@ -252,6 +260,10 @@ var PhraseComponent = /** @class */ (function () {
         this.updateLines = new _angular_core__WEBPACK_IMPORTED_MODULE_0__["EventEmitter"]();
         this.entityIndex = -1;
         this.selection = false;
+        this.selectionIndecies = {
+            start: null,
+            end: null
+        };
     }
     PhraseComponent.prototype.ngOnInit = function () {
         this.getEntitesFromPhrase();
@@ -282,11 +294,12 @@ var PhraseComponent = /** @class */ (function () {
         this.selection = true;
         console.group("Text Select Event");
         console.log("Text:", event.text);
-        console.log("Host Rectangle:", event.hostRectangle);
+        console.log("Selection State", event.selectionState);
         console.groupEnd();
         this.store.sendIndex(this.lineIndex);
         if (event.text) {
             this.line['selectedText'] = event.text;
+            this.selectionIndecies = __assign({}, event.selectionState);
         }
         console.log(this.line['selectedText']);
         // If a new selection has been created, the viewport and host rectangles will
@@ -308,7 +321,7 @@ var PhraseComponent = /** @class */ (function () {
              * Selection
              *
              */
-            var entityObj = this.getEntityObject(entityName);
+            var entityObj = this.getEntityObject(entityName, this.selectionIndecies.start, this.selectionIndecies.end);
             var newEntityItem = [
                 entityObj.start,
                 entityObj.end,
@@ -376,15 +389,10 @@ var PhraseComponent = /** @class */ (function () {
         }
         return -1;
     };
-    PhraseComponent.prototype.getEntityObject = function (entityName) {
-        var startIndex = this.line[2].indexOf(this.line['selectedText']);
-        var wordLen = this.line['selectedText'].length;
-        var endIndex = Math.abs((startIndex + wordLen));
+    PhraseComponent.prototype.getEntityObject = function (entityName, startIndex, endIndex) {
         console.group('Selected Text');
-        console.log('word', this.line['selectedText']);
         console.log('index', startIndex);
         console.log('endIndex', endIndex);
-        console.log('length', wordLen);
         console.groupEnd();
         return {
             start: startIndex,
@@ -435,6 +443,7 @@ var PhraseComponent = /** @class */ (function () {
         this.componentRef = null;
     };
     PhraseComponent.prototype.compileTemplate = function () {
+        console.log('[Parent Cmp] Inside Compile!');
         var metadata = {
             selector: "runtime-component-sample",
             template: this.line[4]
@@ -443,6 +452,7 @@ var PhraseComponent = /** @class */ (function () {
         if (this.componentRef) {
             this.componentRef.destroy();
             this.componentRef = null;
+            console.log('[CmpRef] Nullish!');
         }
         this.componentRef = this.container.createComponent(factory);
         var instance = this.componentRef.instance;
@@ -467,6 +477,9 @@ var PhraseComponent = /** @class */ (function () {
                 }
                 RuntimeComponent.prototype.showEntities = function (lineIndex, entityIndex) {
                     this.selectPhrase.emit(entityIndex);
+                };
+                RuntimeComponent.prototype.ngOnDestroy = function () {
+                    console.log('[Dynmaic Component] Destroyed!');
                 };
                 __decorate([
                     Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
@@ -508,6 +521,7 @@ var PhraseComponent = /** @class */ (function () {
         this.line[2] = phrase;
         var originalPhrase = this.line[2]; // original phrase
         this.line[3] = []; // output content
+        this.line[4] = '';
         var actualEnd = -1;
         if (entities && entities.length) {
             for (var j = 0; j < entities.length; j++) {
@@ -567,10 +581,14 @@ var PhraseComponent = /** @class */ (function () {
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewChild"])('container', { read: _angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewContainerRef"] }),
         __metadata("design:type", _angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewContainerRef"])
     ], PhraseComponent.prototype, "container", void 0);
+    __decorate([
+        Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["ViewChild"])('containSelect'),
+        __metadata("design:type", Object)
+    ], PhraseComponent.prototype, "containSelect", void 0);
     PhraseComponent = __decorate([
         Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Component"])({
             selector: 'app-phrase',
-            template: "\n    <div class=\"container field\" (textSelect)=\"renderRectangles($event)\">\n    <form #testForm=\"ngForm\">\n      <div type=\"text\" class=\"form-control\" contenteditable=\"true\" (blur)=\"triggerChange($event)\" name=\"phrase\">\n        <ng-template #container></ng-template>\n      </div>\n    </form>\n\n\n    <ng-template [ngIf]=\"line?.hostRectangle\">\n      <div class=\"card bg-light entities\">\n        <div class=\"entity\" *ngFor=\"let key of entities | objectLoop\" [style.background]=\"entities[key]\" (click)=\"changeEntity(key)\">\n          {{ key }}\n        </div>\n        <div class=\"icon\" (click)=\"removeEntity()\">\n          <i class=\"fa fa-trash\"></i>\n        </div>\n      </div>\n    </ng-template>\n\n    </div>\n  ",
+            template: "\n    <div class=\"container field\" (textSelect)=\"renderRectangles($event)\" #containSelect>\n    <form #testForm=\"ngForm\">\n      <div type=\"text\" class=\"form-control\" contenteditable=\"true\" (blur)=\"triggerChange($event)\" name=\"phrase\">\n        <ng-template #container></ng-template>\n      </div>\n    </form>\n\n\n    <ng-template [ngIf]=\"line?.hostRectangle\">\n      <div class=\"card bg-light entities\">\n        <div class=\"entity\" *ngFor=\"let key of entities | objectLoop\" [style.background]=\"entities[key]\" (click)=\"changeEntity(key)\">\n          {{ key }}\n        </div>\n        <div class=\"icon\" (click)=\"removeEntity()\">\n          <i class=\"fa fa-trash\"></i>\n        </div>\n      </div>\n    </ng-template>\n\n    </div>\n  ",
             styles: [__webpack_require__(/*! ./phrase.component.css */ "./src/app/components/phrase/phrase.component.css")]
         }),
         __metadata("design:paramtypes", [_angular_core__WEBPACK_IMPORTED_MODULE_0__["Compiler"],
@@ -712,7 +730,8 @@ var TextSelectDirective = /** @class */ (function () {
                 _this.textSelectEvent.emit({
                     text: "",
                     viewportRectangle: null,
-                    hostRectangle: null
+                    hostRectangle: null,
+                    selectionState: null
                 });
             });
         }
@@ -727,6 +746,15 @@ var TextSelectDirective = /** @class */ (function () {
         // host element. If the selection bleeds out-of or in-to the host, then we'll
         // just ignore it since we don't control the outer portions.
         if (this.elementRef.nativeElement.contains(rangeContainer)) {
+            var preSelectionRange = range.cloneRange();
+            var start = null;
+            preSelectionRange.selectNodeContents(rangeContainer);
+            preSelectionRange.setEnd(range.startContainer, range.startOffset);
+            start = preSelectionRange.toString().length;
+            var selectionState = {
+                start: start,
+                end: start + range.toString().length
+            };
             var viewportRectangle = range.getBoundingClientRect();
             var localRectangle = this.viewportToHost(viewportRectangle, rangeContainer);
             // Since emitting event may cause the calling context to change state, we
@@ -747,7 +775,8 @@ var TextSelectDirective = /** @class */ (function () {
                         top: localRectangle.top,
                         width: localRectangle.width,
                         height: localRectangle.height
-                    }
+                    },
+                    selectionState: selectionState
                 });
             });
         }
