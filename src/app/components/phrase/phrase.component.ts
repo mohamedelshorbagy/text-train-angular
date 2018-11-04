@@ -11,7 +11,7 @@ import { TextSelectEvent } from "../../directives/text-selection.directive";
 @Component({
   selector: 'app-phrase',
   template: `
-    <div class="container field" (textSelect)="renderRectangles($event)">
+    <div class="container field" (textSelect)="renderRectangles($event)" #containSelect>
     <form #testForm="ngForm">
       <div type="text" class="form-control" contenteditable="true" (blur)="triggerChange($event)" name="phrase">
         <ng-template #container></ng-template>
@@ -45,7 +45,14 @@ export class PhraseComponent implements OnInit, OnDestroy {
   selection: boolean = false;
   @ViewChild('container', { read: ViewContainerRef })
   container: ViewContainerRef;
-
+  @ViewChild('containSelect') containSelect;
+  selectionIndecies: {
+    start: number,
+    end: number
+  } = {
+      start: null,
+      end: null
+    };
   private componentRef: ComponentRef<{}>;
 
   constructor(
@@ -57,7 +64,6 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.getEntitesFromPhrase();
-
   }
 
   triggerChange(event) {
@@ -91,11 +97,14 @@ export class PhraseComponent implements OnInit, OnDestroy {
     this.selection = true;
     console.group("Text Select Event");
     console.log("Text:", event.text);
-    console.log("Host Rectangle:", event.hostRectangle);
+    console.log("Selection State", event.selectionState);
     console.groupEnd();
     this.store.sendIndex(this.lineIndex);
     if (event.text) {
       this.line['selectedText'] = event.text;
+      this.selectionIndecies = {
+        ...event.selectionState
+      }
     }
     console.log(this.line['selectedText']);
 
@@ -122,7 +131,7 @@ export class PhraseComponent implements OnInit, OnDestroy {
        * Selection
        * 
        */
-      let entityObj = this.getEntityObject(entityName);
+      let entityObj = this.getEntityObject(entityName, this.selectionIndecies.start, this.selectionIndecies.end);
       let newEntityItem = [
         entityObj.start,
         entityObj.end,
@@ -206,15 +215,10 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
   }
 
-  getEntityObject(entityName: string) {
-    let startIndex = this.line[2].indexOf(this.line['selectedText']);
-    let wordLen = this.line['selectedText'].length;
-    let endIndex = Math.abs((startIndex + wordLen));
+  getEntityObject(entityName: string, startIndex: number, endIndex: number) {
     console.group('Selected Text');
-    console.log('word', this.line['selectedText']);
     console.log('index', startIndex);
     console.log('endIndex', endIndex);
-    console.log('length', wordLen);
     console.groupEnd()
     return {
       start: startIndex,
@@ -278,7 +282,7 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
 
   compileTemplate() {
-
+    console.log('[Parent Cmp] Inside Compile!');
     let metadata = {
       selector: `runtime-component-sample`,
       template: this.line[4]
@@ -288,6 +292,7 @@ export class PhraseComponent implements OnInit, OnDestroy {
     if (this.componentRef) {
       this.componentRef.destroy();
       this.componentRef = null;
+      console.log('[CmpRef] Nullish!');
     }
 
     this.componentRef = this.container.createComponent(factory);
@@ -308,11 +313,15 @@ export class PhraseComponent implements OnInit, OnDestroy {
       decoratedCmp = Component(metadata)(cmpClass);
     } else {
       @Component(metadata)
-      class RuntimeComponent {
+      class RuntimeComponent implements OnDestroy {
         @Input() line: any;
         @Output() selectPhrase: EventEmitter<any> = new EventEmitter<any>();
         showEntities(lineIndex, entityIndex) {
           this.selectPhrase.emit(entityIndex);
+        }
+
+        ngOnDestroy() {
+          console.log('[Dynmaic Component] Destroyed!');
         }
       };
       decoratedCmp = RuntimeComponent;
@@ -320,7 +329,6 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
     @NgModule({ imports: [CommonModule], declarations: [decoratedCmp] })
     class RuntimeComponentModule { }
-
     let module: ModuleWithComponentFactories<any> = compiler.compileModuleAndAllComponentsSync(RuntimeComponentModule);
     return module.componentFactories.find(f => f.componentType === decoratedCmp);
   }
@@ -338,6 +346,7 @@ export class PhraseComponent implements OnInit, OnDestroy {
     this.line[2] = phrase;
     let originalPhrase = this.line[2]; // original phrase
     this.line[3] = []; // output content
+    this.line[4] = '';
     let actualEnd = -1;
     if (entities && entities.length) { // Exist
       for (let j = 0; j < entities.length; j++) {

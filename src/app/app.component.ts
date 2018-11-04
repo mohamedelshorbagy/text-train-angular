@@ -16,7 +16,7 @@ export class AppComponent {
 
   toggleInputs: boolean = false;
   tuplesPhrases: any;
-  lines: any;
+  lines: any[];
   entities: any;
 
   constructor(
@@ -49,7 +49,7 @@ export class AppComponent {
     ];
 
 
-    this.lines.push(line);
+    this.lines.unshift(line);
   }
 
 

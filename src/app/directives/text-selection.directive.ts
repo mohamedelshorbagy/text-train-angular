@@ -14,6 +14,7 @@ export interface TextSelectEvent {
   text: string;
   viewportRectangle: SelectionRectangle | null;
   hostRectangle: SelectionRectangle | null;
+  selectionState?: any | null;
 }
 
 interface SelectionRectangle {
@@ -186,7 +187,8 @@ export class TextSelectDirective implements OnInit, OnDestroy {
           this.textSelectEvent.emit({
             text: "",
             viewportRectangle: null,
-            hostRectangle: null
+            hostRectangle: null,
+            selectionState: null
           });
 
         }
@@ -209,6 +211,18 @@ export class TextSelectDirective implements OnInit, OnDestroy {
     // host element. If the selection bleeds out-of or in-to the host, then we'll
     // just ignore it since we don't control the outer portions.
     if (this.elementRef.nativeElement.contains(rangeContainer)) {
+
+      var preSelectionRange = range.cloneRange();
+      var start = null;
+
+      preSelectionRange.selectNodeContents(rangeContainer);
+      preSelectionRange.setEnd(range.startContainer, range.startOffset);
+      start = preSelectionRange.toString().length;
+      var selectionState = {
+        start: start,
+        end: start + range.toString().length
+      };
+
 
       var viewportRectangle = range.getBoundingClientRect();
       var localRectangle = this.viewportToHost(viewportRectangle, rangeContainer);
@@ -233,7 +247,8 @@ export class TextSelectDirective implements OnInit, OnDestroy {
               top: localRectangle.top,
               width: localRectangle.width,
               height: localRectangle.height
-            }
+            },
+            selectionState: selectionState
           });
 
         }
