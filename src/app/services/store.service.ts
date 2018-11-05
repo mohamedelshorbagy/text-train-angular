@@ -85,6 +85,7 @@ export class StoreService {
 
   qoutedString(term) {
     if (typeof term === 'string') {
+      term = term.replace(/'/g, "\\'");
       return `'${term}'`;
     }
     return term;

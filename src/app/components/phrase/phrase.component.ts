@@ -282,7 +282,6 @@ export class PhraseComponent implements OnInit, OnDestroy {
 
 
   compileTemplate() {
-    console.log('[Parent Cmp] Inside Compile!');
     let metadata = {
       selector: `runtime-component-sample`,
       template: this.line[4]
@@ -292,7 +291,6 @@ export class PhraseComponent implements OnInit, OnDestroy {
     if (this.componentRef) {
       this.componentRef.destroy();
       this.componentRef = null;
-      console.log('[CmpRef] Nullish!');
     }
 
     this.componentRef = this.container.createComponent(factory);
@@ -313,15 +311,11 @@ export class PhraseComponent implements OnInit, OnDestroy {
       decoratedCmp = Component(metadata)(cmpClass);
     } else {
       @Component(metadata)
-      class RuntimeComponent implements OnDestroy {
+      class RuntimeComponent {
         @Input() line: any;
         @Output() selectPhrase: EventEmitter<any> = new EventEmitter<any>();
         showEntities(lineIndex, entityIndex) {
           this.selectPhrase.emit(entityIndex);
-        }
-
-        ngOnDestroy() {
-          console.log('[Dynmaic Component] Destroyed!');
         }
       };
       decoratedCmp = RuntimeComponent;

@@ -443,7 +443,6 @@ var PhraseComponent = /** @class */ (function () {
         this.componentRef = null;
     };
     PhraseComponent.prototype.compileTemplate = function () {
-        console.log('[Parent Cmp] Inside Compile!');
         var metadata = {
             selector: "runtime-component-sample",
             template: this.line[4]
@@ -452,7 +451,6 @@ var PhraseComponent = /** @class */ (function () {
         if (this.componentRef) {
             this.componentRef.destroy();
             this.componentRef = null;
-            console.log('[CmpRef] Nullish!');
         }
         this.componentRef = this.container.createComponent(factory);
         var instance = this.componentRef.instance;
@@ -477,9 +475,6 @@ var PhraseComponent = /** @class */ (function () {
                 }
                 RuntimeComponent.prototype.showEntities = function (lineIndex, entityIndex) {
                     this.selectPhrase.emit(entityIndex);
-                };
-                RuntimeComponent.prototype.ngOnDestroy = function () {
-                    console.log('[Dynmaic Component] Destroyed!');
                 };
                 __decorate([
                     Object(_angular_core__WEBPACK_IMPORTED_MODULE_0__["Input"])(),
@@ -996,6 +991,7 @@ var StoreService = /** @class */ (function () {
     };
     StoreService.prototype.qoutedString = function (term) {
         if (typeof term === 'string') {
+            term = term.replace(/'/g, "\\'");
             return "'" + term + "'";
         }
         return term;
