@@ -1,26 +1,36 @@
 <div class="container">
-  <form (ngSubmit)="submitPhrases()" #f="ngForm">
+  <!-- <form (ngSubmit)="submitPhrases()" #f="ngForm">
     <input type="text" [(ngModel)]="tuplesPhrases" name="tuplesPhrases" class="form-control" />
     <button class="btn btn-primary btn-center" [disabled]="!f.valid">Submit</button>
-  </form>
-  <hr>
+  <!-- </form> -->
+  <hr> 
   <button class="btn btn-success btn-center" (click)="saveFile()">Save Data</button>
   <hr>
 </div>
-<ng-template [ngIf]="toggleInputs">
-  <div class="add-line container">
-    <form #addLine="ngForm" (ngSubmit)="addNewLine(addLine)" class="form-group add__line">
-      <input type="text" ngModel #line="ngModel" name="line" class="form-control" required />
-
-      <button class="btn btn-default" type="submit" [disabled]="!f.valid">
-        <i class="fa fa-plus"></i>
-      </button>
-    </form>
-  </div>
+<!-- <ng-template [ngIf]="toggleInputs"> -->
+<div class="add-line container">
+  <form #f="ngForm" (ngSubmit)="addNewLine(f)" class="form-group add__line">
+    <div class="row">
+      <div class="col-6">
+        <input type="text" ngModel #line="ngModel" name="line" class="form-control" required placeholder="Phrase" />
+      </div>
+      <div class="col-4">
+        <ng-template [ngIf]="intents$">
+          <ng-select [items]="intents$ | async" ngModel #intent="ngModel" required name="intent"></ng-select>
+        </ng-template>
+      </div>
+      <div class="col-2">
+        <button class="btn btn-success" type="submit" [disabled]="!f.valid">
+          <i class="fa fa-plus"></i>
+        </button>
+      </div>
+    </div>
+  </form>
+</div>
+<hr>
+<div *ngFor="let phrase of lines; let i = index">
+  <app-phrase [line]="phrase" [lineIndex]="i" (updateLines)="updateLines($event)" [intent]="phrase.intent">
+  </app-phrase>
   <hr>
-  <div *ngFor="let line of lines; let i = index">
-    <app-phrase [line]="line" [entities]="entities" [lineIndex]="i" (updateLines)="updateLines($event)">
-    </app-phrase>
-
-  </div>
-</ng-template>
+</div>
+<!-- </ng-template> -->

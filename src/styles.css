@@ -1,3 +1,19 @@
 /* You can add global styles to this file, and also import other style files */
-@import "../node_modules/font-awesome/css/font-awesome.min.css";
 
+@import "../node_modules/font-awesome/css/font-awesome.min.css";
+@import "~@ng-select/ng-select/themes/default.theme.css";
+body {
+    font-family: 'Montserrat', sans-serif;
+}
+
+/* .table-responsive {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+} */
+
+* {
+    box-sizing: border-box
+}

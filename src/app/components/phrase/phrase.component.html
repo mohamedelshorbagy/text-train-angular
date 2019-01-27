@@ -1,1 +1,72 @@
-<p>Phrase Component</p>
+<div class="container field" (textSelect)="selectPhrase($event)" #containSelect>
+    <button (click)="LogValue()" class="btn btn-priamry">Log</button>
+    <form #testForm="ngForm">
+        <div type="text" class="form-control" contenteditable="true" [(ngModel)]="line.text" name="phrase"></div>
+    </form>
+    <ng-template [ngIf]="line?.showEntities">
+        <div class="card bg-light entities" *ngIf="entities$ | async">
+            <div class="entity" *ngFor="let key of (entities$ | async)" [style.background-color]="'#107896'" (click)="changeEntity(key)">
+                {{ key }}
+            </div>
+        </div>
+    </ng-template>
+
+    <div class="intent-badge">{{ line?.intent }}</div>
+    <ng-template [ngIf]="line?.entities && line?.entities.length">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped table-sm">
+                <thead class="table-thead">
+                    <tr>
+                        <th>Entity</th>
+                        <th>text</th>
+                        <th>Indexes</th>
+                        <th>Options</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let entity of line?.entities; let i = index">
+                        <ng-template [ngIf]="!entity?.edit">
+                            <td>{{ '@' + entity?.entity }}</td>
+                        </ng-template>
+                        <ng-template [ngIf]="entity?.edit">
+                            <td>
+                                <ng-select [items]="(entities$ | async)" [hideSelected]="true" [(ngModel)]="entity.entity">
+                                </ng-select>
+                            </td>
+                        </ng-template>
+                        <td>{{ entity?.value }}</td>
+                        <td>{{ entity?.start + ' - ' + entity?.end }}</td>
+                        <td>
+                            <!-- <div class="btns-group"> -->
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                <ng-template [ngIf]="!entity?.edit">
+                                    <label class="btn btn-primary btn-sm" (click)="editEntity(i)">
+                                        <i class="fa fa-pencil"></i>
+                                    </label>
+                                    <label class="btn btn-danger btn-sm" (click)="removeEntity(i)">
+                                        <i class="fa fa-trash"></i>
+                                    </label>
+                                </ng-template>
+                                <ng-template [ngIf]="entity?.edit">
+                                    <label class="btn btn-danger" (click)="saveEntity(entity.entity, i)">
+                                        <i class="fa fa-check"></i>
+                                    </label>
+                                </ng-template>
+                            </div>
+                            <!-- <button class="btn btn-primary" >
+                                        Edit
+                                    </button>
+                                    <button class="btn btn-danger" >
+                                        Remove
+                                    </button> -->
+                            <!-- </div> -->
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </ng-template>
+
+
+</div>

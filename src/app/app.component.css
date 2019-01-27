@@ -31,14 +31,3 @@ input {
 input.ng-touched.ng-invalid {
     border: 1px solid rgb(231, 70, 96);
 }
-
-.add__line {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.add__line input {
-    margin-bottom: 0;
-    margin-right: 5px;
-}

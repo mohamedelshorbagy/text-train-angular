@@ -8,27 +8,29 @@ import { FormsModule } from '@angular/forms';
 import { PhraseComponent } from './components/phrase/phrase.component';
 
 import { StoreService } from './services/store.service'
-import { FileOpService } from './services/file-op.service';
+import { IntentEntityService } from './services/intent_entity.service';
 import { LoopOverObjectsPipe } from './pipes/loop-over-objects.pipe';
 import { FileSaverModule } from 'ngx-filesaver';
-
+import { NgSelectModule } from '@ng-select/ng-select';
+import { ContentMatchDirective } from './directives/content-match.directive';
 @NgModule({
   declarations: [
     AppComponent,
     TextSelectDirective,
     PhraseComponent,
     LoopOverObjectsPipe,
+    ContentMatchDirective
   ],
   imports: [
     BrowserModule,
     FormsModule,
     ContenteditableModule,
-    FileSaverModule
+    FileSaverModule,
+    NgSelectModule
   ],
   providers: [
     StoreService,
-    FileOpService,
-
+    IntentEntityService,
   ],
   bootstrap: [AppComponent]
 })
