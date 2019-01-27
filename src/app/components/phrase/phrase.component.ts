@@ -33,11 +33,6 @@ export class PhraseComponent implements OnInit {
   }
 
 
-  LogValue() {
-    console.log(this.line);
-  }
-
-
   ngOnInit() {
     this.entities$ = this.intentEntityService.entities;
   }
