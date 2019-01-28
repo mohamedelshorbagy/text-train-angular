@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { map, shareReplay } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Injectable()
 export class IntentEntityService {
-  cache: Observable<any> = null;
   constructor(
     private http: HttpClient
   ) { }
@@ -30,8 +28,7 @@ export class IntentEntityService {
   entities_synonyms() {
     return this.http.get('/assets/training-data.json')
       .pipe(
-        map(res => (<any>res).rasa_nlu_data.entity_synonyms),
-        shareReplay(1)
+        map(res => (<any>res).rasa_nlu_data.entity_synonyms)
       );
   }
 
