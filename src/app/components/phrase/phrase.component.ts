@@ -102,6 +102,22 @@ export class PhraseComponent implements OnInit {
 
   }
 
+
+  checkEntity(value: string, index: number) {
+    value = value.trim();
+    this.intentEntityService.entities_synonyms().subscribe(synonyms => {
+      for (let entity of synonyms) {
+        let values: any[] = entity['synonyms'];
+        let filtered = values.filter((it: string) => it.toLowerCase() === value.toLowerCase());
+        if (filtered.length > 0) {
+          this.line['entities'][index].value = entity['value'];
+          this.updateParentLines();
+          return;
+        }
+      }
+    })
+  }
+
   randomColor() {
     return '#' + (0x1000000 + (Math.random()) * 0xffffff).toString(16).substr(1, 6)
   }

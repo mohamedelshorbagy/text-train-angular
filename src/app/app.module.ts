@@ -1,6 +1,6 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
-
+import { HttpClientModule } from '@angular/common/http';
 import { AppComponent } from './app.component';
 import { TextSelectDirective } from './directives/text-selection.directive';
 import { ContenteditableModule } from 'ng-contenteditable';
@@ -22,6 +22,7 @@ import { NgSelectModule } from '@ng-select/ng-select';
   imports: [
     BrowserModule,
     FormsModule,
+    HttpClientModule,
     ContenteditableModule,
     FileSaverModule,
     NgSelectModule
