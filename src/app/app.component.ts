@@ -77,7 +77,7 @@ export class AppComponent {
           line.entities.map(entity => {
             delete entity.edit
             return entity;
-          }));
+          })) || [];
         return line;
       });
       console.log(lines)
