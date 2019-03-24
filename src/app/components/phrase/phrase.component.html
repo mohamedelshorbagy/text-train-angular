@@ -1,7 +1,7 @@
-<div class="container field" (textSelect)="selectPhrase($event)" #containSelect>
+<div class="container field" #containSelect>
     <!-- <button (click)="LogValue()" class="btn btn-priamry">Log</button> -->
     <form #testForm="ngForm">
-        <div type="text" class="form-control" contenteditable="true" [(ngModel)]="line.text" name="phrase"></div>
+        <div type="text" class="form-control" contenteditable="true" [(ngModel)]="line.text" name="phrase" (textSelect)="selectPhrase($event)"></div>
     </form>
     <ng-template [ngIf]="line?.showEntities">
         <div class="card bg-light entities" *ngIf="entities$ | async">
